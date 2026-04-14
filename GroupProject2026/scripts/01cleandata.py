@@ -16,3 +16,11 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import missingno as msno
 
 # Load the dataset
+df = pd.read_csv('GroupProject2026\data\diabetic_data.csv')
+
+# Display the first few rows of the dataset
+print(df.head())
+
+# Check for missing values
+print(df.isnull().sum())
+

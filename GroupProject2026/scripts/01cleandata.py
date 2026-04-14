@@ -14,3 +14,5 @@ from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 # importing python library for working with missing data
 import missingno as msno
+
+# Load the dataset

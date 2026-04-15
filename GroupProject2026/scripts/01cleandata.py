@@ -40,10 +40,10 @@ df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
 # Percentage of patients on Diabetes medication
 diabetes_medication_percentage = (df['diabetesMed_Yes'].sum() / len
 (df)) * 100
-print(f"Percentage of patients on Diabetes medication: {diabetes_medication_percentage:.2f
-}%")
+print(f"Percentage of patients on Diabetes medication: {diabetes_medication_percentage:.2f}%")
 
 # Percentage of patients readmitted within 30 days
 readmitted_within_30_days_percentage = (df['readmitted_<30'].sum() / len(df)) * 100
-print(f"Percentage of patients readmitted within 30 days: {readmitted_within_days_percentage:.2f}%")
+print(f"Percentage of patients readmitted within 30 days: {readmitted_within_30_days_percentage:.2f}%")
+
 

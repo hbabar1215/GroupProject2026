@@ -24,3 +24,26 @@ print(df.head())
 # Check for missing values
 print(df.isnull().sum())
 
+# Visualize missing values
+msno.matrix(df)
+
+# Drop columns with a high percentage of missing values
+threshold = 0.5  # Set a threshold for dropping columns (e.g., 50% missing)
+missing_percentage = df.isnull().mean()
+columns_to_drop = missing_percentage[missing_percentage > threshold].index
+df.drop(columns=columns_to_drop, inplace=True)
+
+# Convert categorical variables to numeric using one-hot encoding
+categorical_cols = df.select_dtypes(include=['object']).columns
+df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+
+# Percentage of patients on Diabetes medication
+diabetes_medication_percentage = (df['diabetesMed_Yes'].sum() / len
+(df)) * 100
+print(f"Percentage of patients on Diabetes medication: {diabetes_medication_percentage:.2f
+}%")
+
+# Percentage of patients readmitted within 30 days
+readmitted_within_30_days_percentage = (df['readmitted_<30'].sum() / len(df)) * 100
+print(f"Percentage of patients readmitted within 30 days: {readmitted_within_days_percentage:.2f}%")
+

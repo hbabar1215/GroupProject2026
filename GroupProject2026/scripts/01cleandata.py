@@ -16,10 +16,13 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import missingno as msno
 
 # Load the dataset
-df = pd.read_csv('GroupProject2026\data\diabetic_data.csv')
+df = pd.read_csv('GroupProject2026/data/diabetic_data.csv')
 
 # Display the first few rows of the dataset
 print(df.head())
+
+# Replace '?' with NaN
+df.replace('?', np.nan, inplace=True)
 
 # Check for missing values
 print(df.isnull().sum())
@@ -37,13 +40,26 @@ df.drop(columns=columns_to_drop, inplace=True)
 categorical_cols = df.select_dtypes(include=['object']).columns
 df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
 
-# Percentage of patients on Diabetes medication
-diabetes_medication_percentage = (df['diabetesMed_Yes'].sum() / len
-(df)) * 100
-print(f"Percentage of patients on Diabetes medication: {diabetes_medication_percentage:.2f}%")
+# List column names 
+print(df.columns.tolist())
+
+# Create <30 readmission column
+if 'readmitted_NO' in df.columns and 'readmitted_>30' in df.columns:
+    df['readmit_30'] = (
+        (df['readmitted_NO'] == 0) &
+        (df['readmitted_>30'] == 0)
+    ).astype(int)
+else:
+    raise KeyError("Expected readmitted_NO and readmitted_>30 columns not found.")
 
 # Percentage of patients readmitted within 30 days
-readmitted_within_30_days_percentage = (df['readmitted_<30'].sum() / len(df)) * 100
-print(f"Percentage of patients readmitted within 30 days: {readmitted_within_30_days_percentage:.2f}%")
+readmit_30_percentage = df['readmit_30'].mean() * 100
+print(f"Percentage of patients readmitted within 30 days: {readmit_30_percentage:.2f}%")
+
+# Save the cleaned dataset to a new CSV file in the output folder
+df.to_csv('GroupProject2026/output/cleaned_diabetic_data.csv', index=False)
+
+
+
 
 

@@ -1,65 +1,67 @@
-import pandas as pd   # data processing, CSV file I/O (e.g. pd.read_csv)
-import numpy as np   # linear algebra
-import matplotlib.pyplot as plt  #graphs and plots
-import seaborn as sns   #data visualizations
-import plotly.express as px  #graphs and plots
-import csv # Some extra functionalities for csv  files - reading it as a dictionary
-from lightgbm import LGBMClassifier #sklearn is for machine learning and statistical modeling including classification, regression, clustering and dimensionality reduction
+import pandas as pd
+import numpy as np
 
-from sklearn.model_selection import train_test_split, cross_validate   #break up dataset into train and test sets
+def clean_data(input_path, output_path="data/cleaned_diabetic_data.csv"):
+    
+    # Load dataset
+    df = pd.read_csv(input_path)
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-# importing python library for working with missing data
-import missingno as msno
+    print("Original shape:", df.shape)
 
-# Load the dataset
-df = pd.read_csv('data/diabetic_data.csv')
+    # Replace '?' with NaN
+    df.replace("?", np.nan, inplace=True)
 
-# Display the first few rows of the dataset
-print(df.head())
+    # Remove invalid gender rows
+    df = df[df["gender"] != "Unknown/Invalid"]
 
-# Replace '?' with NaN
-df.replace('?', np.nan, inplace=True)
+    # Drop ID columns (not useful for prediction)
+    df.drop(columns=["encounter_id", "patient_nbr"], inplace=True, errors="ignore")
 
-# Check for missing values
-print(df.isnull().sum())
+    # Drop columns with >50% missing values
+    missing_pct = df.isnull().mean()
+    cols_to_drop = missing_pct[missing_pct > 0.5].index
+    df.drop(columns=cols_to_drop, inplace=True)
 
-# Visualize missing values
-msno.matrix(df)
+    print("Columns dropped due to missing values:", list(cols_to_drop))
 
-# Drop columns with a high percentage of missing values
-threshold = 0.5  # Set a threshold for dropping columns (e.g., 50% missing)
-missing_percentage = df.isnull().mean()
-columns_to_drop = missing_percentage[missing_percentage > threshold].index
-df.drop(columns=columns_to_drop, inplace=True)
+    # Create binary target variable
+    # 1 = readmitted within 30 days
+    # 0 = not readmitted within 30 days
+    df["readmit_30"] = df["readmitted"].apply(lambda x: 1 if x == "<30" else 0)
 
-# Convert categorical variables to numeric using one-hot encoding
-categorical_cols = df.select_dtypes(include=['object']).columns
-df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+    # Keep only your final variables
+    selected_columns = [
+        "age",
+        "gender",
+        "insulin",
+        "diabetesMed",
+        "number_inpatient",
+        "number_emergency",
+        "time_in_hospital",
+        "num_medications",
+        "number_diagnoses",
+        "admission_type_id",
+        "readmit_30"
+    ]
 
-# List column names 
-print(df.columns.tolist())
+    df = df[selected_columns].copy()
 
-# Create <30 readmission column
-if 'readmitted_NO' in df.columns and 'readmitted_>30' in df.columns:
-    df['readmit_30'] = (
-        (df['readmitted_NO'] == 0) &
-        (df['readmitted_>30'] == 0)
-    ).astype(int)
-else:
-    raise KeyError("Expected readmitted_NO and readmitted_>30 columns not found.")
+    # Drop rows with missing values in selected columns
+    df.dropna(inplace=True)
 
-# Percentage of patients readmitted within 30 days
-readmit_30_percentage = df['readmit_30'].mean() * 100
-print(f"Percentage of patients readmitted within 30 days: {readmit_30_percentage:.2f}%")
+    print("Cleaned shape:", df.shape)
 
-# Save the cleaned dataset to a new CSV file in the output folder
-df.to_csv('data/cleaned_diabetic_data.csv', index=False)
+    # Save cleaned dataset
+    df.to_csv(output_path, index=False)
 
+    print(f"Cleaned dataset saved to {output_path}")
+
+    return df
 
 
+# Run directly if file is executed
+if __name__ == "__main__":
+    clean_data("data/diabetic_data.csv")
 
 
+    
